@@ -1,11 +1,9 @@
+#ifdef CONFIG_HAL_DRIVER_SCD40
 #ifndef _HAL_SCD40_H
 #define _HAL_SCD40_H
 
 #include "hal/I2C/I2C.h"
-
-#ifdef CONFIG_HAL_DRIVER_SCD40
 #include <SensirionI2cScd4x.h>
-#endif
 
 namespace HAL::SCD40
 {
@@ -37,9 +35,7 @@ namespace HAL::SCD40
         private:
             const Configuration _configuration;
             I2C::Driver& _i2c;
-            #ifdef CONFIG_HAL_DRIVER_SCD40
             SensirionI2cScd4x _sensor;
-            #endif
             uint64_t _serialNumber;
             uint16_t _co2Concentration;
             float _temperature;
@@ -48,4 +44,5 @@ namespace HAL::SCD40
     };
 }
 
+#endif
 #endif

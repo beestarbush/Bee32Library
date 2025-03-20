@@ -1,3 +1,4 @@
+#ifdef CONFIG_SERVICE_BLUETOOTH_KEYBOARD
 #include "BKY.h"
 #include "Arduino.h"
 
@@ -50,3 +51,4 @@ namespace SSL::BKY
         _keyboard.release(key);
     }
 }
+#endif

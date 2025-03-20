@@ -1,3 +1,4 @@
+#ifdef CONFIG_HAL_DRIVER_SCD40
 #include "SCD40.h"
 #include <Arduino.h>
 
@@ -14,9 +15,7 @@ namespace HAL::SCD40
     Driver::Driver(const Configuration& configuration, I2C::Driver& i2c) :
         _configuration(configuration),
         _i2c(i2c),
-        #ifdef CONFIG_HAL_DRIVER_MAX72XX
         _sensor(),
-        #endif
         _serialNumber(0),
         _co2Concentration(0),
         _temperature(0),
@@ -27,7 +26,6 @@ namespace HAL::SCD40
 
     bool Driver::begin()
     {
-        #ifdef CONFIG_HAL_DRIVER_MAX72XX
         _sensor.begin(*_i2c.getWire(), _configuration._address);
 
         // Ensure sensor is in clean state
@@ -71,14 +69,12 @@ namespace HAL::SCD40
         // function above. Check out the header file for the definition.
         // For SCD41, you can also check out the single shot measurement example.
         //
-        #endif
 
         return true;
     }
 
     void Driver::run()
     {
-        #ifdef CONFIG_HAL_DRIVER_MAX72XX
         // Slow down the sampling to 0.2Hz.
         uint64_t now = millis();
         if (now - _updateInterval < UPDATE_INTERVAL)
@@ -108,17 +104,14 @@ namespace HAL::SCD40
             Serial.print("Error trying to execute readMeasurement(): ");
             return;
         }
-        #endif
     }
 
     void Driver::end()
     {
-        #ifdef CONFIG_HAL_DRIVER_MAX72XX
         if (_sensor.stopPeriodicMeasurement() != NO_ERROR)
         {
             Serial.print("Error trying to execute stopPeriodicMeasurement(): ");
         }
-        #endif
     }
 
     uint64_t Driver::getSerialNumber()
@@ -144,3 +137,4 @@ namespace HAL::SCD40
         return _relativeHumidity;
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#ifdef CONFIG_SERVICE_BLUETOOTH_KEYBOARD
 #ifndef _SERVICES_BKY_H
 #define _SERVICES_BKY_H
 
@@ -35,4 +36,5 @@ namespace SSL::BKY
     };
 }
 
+#endif
 #endif
