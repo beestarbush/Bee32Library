@@ -10,6 +10,7 @@ namespace HAL::SSD1306
     {
     }
 
+#ifdef CONFIG_HAL_DRIVER_SSD1306
     Driver::Driver(const Configuration& configuration, I2C::Driver& i2c) :
         Base(configuration._width, configuration._height, i2c.getWire(), -1),
         _configuration(configuration)
@@ -20,4 +21,16 @@ namespace HAL::SSD1306
     {
         return Base::begin(SSD1306_SWITCHCAPVCC, _configuration._address);
     }
+#else
+    Driver::Driver(const Configuration& configuration, I2C::Driver& i2c) :
+        _configuration(configuration)
+    {
+    }
+
+    bool Driver::begin()
+    {
+        Serial.println("! SSD1306 driver not enabled.");
+        return true;
+    }
+    #endif
 }

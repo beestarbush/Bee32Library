@@ -34,6 +34,7 @@ namespace SSL::GUI
         setChanged(true);
     }
 
+#ifdef CONFIG_HAL_DRIVER_SSD1306
     void Label::draw(HAL::SSD1306::Driver& display)
     {
         if (getVisible() == false ||
@@ -47,6 +48,7 @@ namespace SSL::GUI
         display.setCursor(getX(), getY());
         display.println(_text);
     }
+#endif
 
     Rectangle::Rectangle(ComponentId id, uint8_t x, uint8_t y, uint8_t width, uint8_t height) :
         Base(id, x, y),
@@ -55,6 +57,7 @@ namespace SSL::GUI
     {
     }
 
+#ifdef CONFIG_HAL_DRIVER_SSD1306
     void Rectangle::draw(HAL::SSD1306::Driver& display)
     {
         if (getVisible() == false ||
@@ -72,6 +75,7 @@ namespace SSL::GUI
             display.drawRoundRect(getX(), getY(), _width, _height, 2, WHITE);
         }
     }
+#endif
 
     Button::Button(ComponentId id, uint8_t x, uint8_t y, uint8_t width, uint8_t height, bool active, String text) :
         Base(id, x, y, width, height),
@@ -93,6 +97,7 @@ namespace SSL::GUI
         setChanged(true);
     }
 
+#ifdef CONFIG_HAL_DRIVER_SSD1306
     void Button::draw(HAL::SSD1306::Driver& display)
     {
         if (getVisible() == false ||
@@ -134,6 +139,7 @@ namespace SSL::GUI
             display.println(_text);
         }
     }
+#endif    
 
     Screen::Screen(ScreenId id, uint8_t width, uint8_t height) :
         _id(id),
@@ -180,6 +186,7 @@ namespace SSL::GUI
         return _components[id];
     }
 
+#ifdef CONFIG_HAL_DRIVER_SSD1306
     void Screen::draw(HAL::SSD1306::Driver& display)
     {
         if (_active == false)
@@ -213,6 +220,7 @@ namespace SSL::GUI
         }
         display.display();
     }
+#endif
 
     void Screen::handleInput()
     {
