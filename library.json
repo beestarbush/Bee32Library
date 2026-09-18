@@ -1,0 +1,20 @@
+{
+    "name": "Bee32 library",
+    "version": "0.0.0",
+    "description": "Library that is used for projects for me.",
+    "keywords": "HAL, services, library, esp32",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/beestarbush/Bee32Library.git"
+    },
+    "authors": [
+        {
+            "name": "Randy Bijsterbosch",
+            "email": "randy@bijsterbosch.org",
+            "maintainer": true
+        }
+    ],
+    "license": "MIT",
+    "frameworks": "arduino",
+    "platforms": "*"
+}
