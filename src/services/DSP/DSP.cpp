@@ -375,26 +375,8 @@ namespace SSL::DSP
         // _maxA.setDigit(_cfg.seconds[0].digit, boolean ? 1 : 0, false);
     }
 
-    void Service::setVersion(String version)
+    void Service::setVersion(String)
     {
-        // for (uint8_t i = 3; i < _maxA.getConnectedDigits(); i++)
-        // {
-        //     _maxA.setChar(i, ' ', false);
-        // }
-        // for (uint8_t i = 0; i < _maxB.getConnectedDigits(); i++)
-        // {
-        //     _maxB.setChar(i, ' ', false);
-        // }
-
-        // Find first dot so we know where to look for the tag IDs.
-        int index = version.indexOf('.');
-        uint8_t patch = version.charAt(index + 3) - '0';
-        uint8_t minor = version.charAt(index + 1) - '0';
-        uint8_t major = version.charAt(index - 1) - '0';
-
-        // _maxA.setDigit(_cfg.minutes[0].digit, major, true);
-        // _maxA.setDigit(_cfg.seconds[1].digit, minor, true);
-        // _maxA.setDigit(_cfg.seconds[0].digit, patch, false);
     }
 
     void Service::setIpAddress(IPAddress ipAddress)

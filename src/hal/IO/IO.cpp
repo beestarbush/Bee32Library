@@ -35,6 +35,7 @@ namespace HAL::IO
     void Driver::run()
     {
         bool currentValue = digitalRead(_configuration._pin);
+        bool value = _configuration._activeHigh ? currentValue : !currentValue;
         unsigned long now = millis();
 
         // Check for a change in pin state
@@ -45,17 +46,9 @@ namespace HAL::IO
         }
 
         // Only consider the pin state if the debounce delay has passed
-        if (((now - _lastDebounceTime) > DEBOUNCE_DELAY) && (currentValue != _value))
+        if (((now - _lastDebounceTime) > DEBOUNCE_DELAY) && (value != _value))
         {
-            // Update the value based on active high or low configuration
-            if (_configuration._activeHigh)
-            {
-                _value = currentValue;
-            }
-            else
-            {
-                _value = !currentValue;
-            }
+            _value = value;
             if (_callback)
             {
                 _callback(_value);
