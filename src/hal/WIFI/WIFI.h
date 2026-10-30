@@ -32,7 +32,10 @@ namespace HAL::WIFI
             void end();
 
             bool connect(const char* ssid, const char* password);
+            void startConnect(const char* ssid, const char* password);
             void disconnect();
+            uint8_t getChannel();
+            bool setChannel(uint8_t channel);
             void setupAccessPoint();
             IPAddress getAccessPointIpAddress();
 

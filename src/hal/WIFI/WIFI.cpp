@@ -3,6 +3,7 @@
 #if CONFIG_HAL_DRIVER_WIFI
 
 #include "WiFi.h"
+#include <esp_wifi.h>
 
 namespace HAL::WIFI
 {
@@ -26,28 +27,53 @@ namespace HAL::WIFI
 
     bool Driver::connect(const char* ssid, const char* password)
     {
-        WiFi.mode(WIFI_AP);
-        WiFi.setAutoReconnect(true);
-        WiFi.begin(ssid, password);
+        startConnect(ssid, password);
         WiFi.waitForConnectResult(_configuration._connectionTimeout);
 
         return WiFi.status() == WL_CONNECTED;
     }
 
+    void Driver::startConnect(const char* ssid, const char* password)
+    {
+        WiFi.mode(WIFI_STA);
+        WiFi.setAutoReconnect(true);
+        WiFi.begin(ssid, password);
+    }
+
+    // A station disconnect keeps the radio in STA mode so ESP-NOW keeps working on the current channel.
     void Driver::disconnect()
     {
         if (isAccessPoint())
         {
             WiFi.softAPdisconnect();
+            WiFi.mode(WIFI_OFF);
+            return;
         }
-        else
+
+        WiFi.setAutoReconnect(false);
+        WiFi.disconnect(false, false);
+    }
+
+    uint8_t Driver::getChannel()
+    {
+        return static_cast<uint8_t>(WiFi.channel());
+    }
+
+    // Only possible while the station is not connected; the access point then dictates the channel.
+    bool Driver::setChannel(uint8_t channel)
+    {
+        if (getConnected() || channel < 1U || channel > 13U)
         {
-            WiFi.disconnect();
-            WiFi.waitForConnectResult();
+            return false;
         }
-        
-        // Disable the WIFI radios.
-        WiFi.mode(WIFI_OFF);
+        if (WiFi.getMode() == WIFI_MODE_NULL)
+        {
+            WiFi.mode(WIFI_STA);
+        }
+        esp_wifi_set_promiscuous(true);
+        const bool result = esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE) == ESP_OK;
+        esp_wifi_set_promiscuous(false);
+        return result;
     }
 
     void Driver::setupAccessPoint()
