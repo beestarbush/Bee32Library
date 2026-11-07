@@ -15,6 +15,7 @@ namespace SSL::NOW
 {
     constexpr size_t MAC_LENGTH = 6U;
     constexpr size_t MAX_PAYLOAD = 250U;
+    constexpr size_t KEY_LENGTH = 16U;
 
     class Listener
     {
@@ -40,6 +41,10 @@ namespace SSL::NOW
             void unregisterINow();
 
             bool addPeer(const uint8_t mac[MAC_LENGTH]);
+            // Unicast to and from this peer is encrypted with localKey; both sides need the same
+            // local key and the same primary key (setPrimaryKey, after begin). Broadcast stays unencrypted.
+            bool addEncryptedPeer(const uint8_t mac[MAC_LENGTH], const uint8_t localKey[KEY_LENGTH]);
+            bool setPrimaryKey(const uint8_t key[KEY_LENGTH]);
             bool removePeer(const uint8_t mac[MAC_LENGTH]);
             bool send(const uint8_t mac[MAC_LENGTH], const void* data, size_t length);
             bool broadcast(const void* data, size_t length);
@@ -57,6 +62,7 @@ namespace SSL::NOW
             // ESP-NOW callbacks run on the Wi-Fi task and carry no user context.
             static Service* _instance;
             static void onReceive(const uint8_t* mac, const uint8_t* data, int length);
+            bool registerPeer(const uint8_t mac[MAC_LENGTH], const uint8_t* localKey);
 
             QueueHandle_t _queue;
             NOW::Listener* _inow;

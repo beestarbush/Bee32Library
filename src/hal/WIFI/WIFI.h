@@ -5,12 +5,20 @@
 
 #if CONFIG_HAL_DRIVER_WIFI
 
+#include <atomic>
 #include <stdint.h>
 #include <WString.h>
 #include <IPAddress.h>
 
 namespace HAL::WIFI
 {
+    enum class ConnectionState : uint8_t
+    {
+        DISCONNECTED,
+        ASSOCIATED,
+        CONNECTED
+    };
+
     class Configuration
     {
         public:
@@ -32,7 +40,8 @@ namespace HAL::WIFI
             void end();
 
             bool connect(const char* ssid, const char* password);
-            void startConnect(const char* ssid, const char* password);
+            // channel 0 scans all channels; a known channel connects without scanning.
+            void startConnect(const char* ssid, const char* password, uint8_t channel = 0U);
             void disconnect();
             uint8_t getChannel();
             bool setChannel(uint8_t channel);
@@ -40,6 +49,8 @@ namespace HAL::WIFI
             IPAddress getAccessPointIpAddress();
 
             bool getConnected();
+            ConnectionState getConnectionState() const;
+            uint8_t getDisconnectReason() const;
             bool isAccessPoint();
             IPAddress getIpAddress();
             String getSubnetMask();
@@ -48,6 +59,8 @@ namespace HAL::WIFI
 
         private:
             const Configuration _configuration;
+            std::atomic<ConnectionState> _connectionState;
+            std::atomic<uint8_t> _disconnectReason;
     };
 }
 

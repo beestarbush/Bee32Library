@@ -7,10 +7,13 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <functional>
+#include <vector>
 
 namespace HAL::WIFI
 {
     class Driver;
+    enum class ConnectionState : uint8_t;
 }
 namespace SSL::NVS
 {
@@ -34,9 +37,14 @@ namespace SSL::NET
         UPDATE = 2
     };
 
+    // Wi-Fi limits (32 and 63 characters) plus the terminating zero.
+    constexpr size_t SSID_SIZE = 33U;
+    constexpr size_t PASSWORD_SIZE = 64U;
+
     // Network policy: Wi-Fi is off by default and only joins the router at boot (time sync and
     // learning the router channel) and while ONLINE or UPDATE is requested. Offline, the radio stays
     // on the learned channel so ESP-NOW peers that joined the same router share it.
+    // Boot-time association can be disabled per target with CONFIG_SERVICE_NET_BOOT_CONNECT.
     // Credentials come from the configuration keys "ssid" and "password"; the learned channel is
     // stored as "channel" and used when the router is unreachable at boot.
     class Service
@@ -45,12 +53,13 @@ namespace SSL::NET
             Service(HAL::WIFI::Driver& wifi, NVS::Service& configuration, TIM::Service& time, OTA::Service& ota);
             ~Service() = default;
 
-            // Blocks for up to the Wi-Fi connection timeout plus the NTP timeout.
+            // Starts the boot-time Wi-Fi attempt without blocking.
             void begin();
             void run();
             void end();
 
             void setMode(Mode mode);
+            void addConnectionRequirement(std::function<bool()> requirement);
             Mode getMode() const;
             bool isConnected() const;
             uint8_t getChannel() const;
@@ -59,9 +68,18 @@ namespace SSL::NET
 
         private:
             static constexpr uint8_t DEFAULT_CHANNEL = 1U;
+            static constexpr uint8_t FAST_RETRY_LIMIT = 2U;
+            static constexpr uint32_t ASSOCIATION_TIMEOUT_MS = 5000U;
+            static constexpr uint32_t IP_TIMEOUT_MS = 5000U;
+            static constexpr uint32_t FAST_RETRY_DELAY_MS = 500U;
+            static constexpr uint32_t BACKGROUND_RETRY_DELAY_MS = 5000U;
 
             bool readCredentials(char* ssid, size_t ssidSize, char* password, size_t passwordSize);
+            void advanceConnection(uint32_t now, HAL::WIFI::ConnectionState state);
+            void startConnection(uint32_t now);
+            void failConnection(uint32_t now);
             void onConnected();
+            bool hasConnectionRequirement() const;
 
             HAL::WIFI::Driver& _wifi;
             NVS::Service& _configuration;
@@ -70,7 +88,13 @@ namespace SSL::NET
             Mode _mode;
             uint8_t _channel;
             bool _connecting;
+            bool _associated;
             bool _connected;
+            uint8_t _retryCount;
+            uint32_t _connectStart;
+            uint32_t _associationStart;
+            uint32_t _retryAt;
+            std::vector<std::function<bool()>> _connectionRequirements;
     };
 }
 

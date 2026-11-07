@@ -113,12 +113,35 @@ namespace SSL::NOW
         {
             return true;
         }
+        return registerPeer(mac, nullptr);
+    }
 
+    // Re-registers an existing peer, so it cannot stay unencrypted.
+    bool Service::addEncryptedPeer(const uint8_t mac[MAC_LENGTH], const uint8_t localKey[KEY_LENGTH])
+    {
+        if (esp_now_is_peer_exist(mac) && esp_now_del_peer(mac) != ESP_OK)
+        {
+            return false;
+        }
+        return registerPeer(mac, localKey);
+    }
+
+    bool Service::setPrimaryKey(const uint8_t key[KEY_LENGTH])
+    {
+        return _started && esp_now_set_pmk(key) == ESP_OK;
+    }
+
+    bool Service::registerPeer(const uint8_t mac[MAC_LENGTH], const uint8_t* localKey)
+    {
         esp_now_peer_info_t peer = {};
         memcpy(peer.peer_addr, mac, MAC_LENGTH);
         peer.channel = 0;
         peer.ifidx = WIFI_IF_STA;
-        peer.encrypt = false;
+        peer.encrypt = localKey != nullptr;
+        if (localKey != nullptr)
+        {
+            memcpy(peer.lmk, localKey, KEY_LENGTH);
+        }
         return esp_now_add_peer(&peer) == ESP_OK;
     }
 

@@ -48,6 +48,12 @@
 #define CONFIG_SERVICE_NET CONFIG_SERVICE_OTA
 #endif
 
+// NET boot-time station connect policy. Keep enabled by default so existing targets
+// preserve behavior unless they opt out explicitly.
+#ifndef CONFIG_SERVICE_NET_BOOT_CONNECT
+#define CONFIG_SERVICE_NET_BOOT_CONNECT 1
+#endif
+
 #ifndef CONFIG_SERVICE_BLUETOOTH_KEYBOARD
 #define CONFIG_SERVICE_BLUETOOTH_KEYBOARD CONFIG_HAL_DRIVER_BLUETOOTH
 #endif
