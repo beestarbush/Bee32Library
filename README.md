@@ -1,5 +1,29 @@
 # Bee32 Library Feature Configuration
 
+## Notification Service
+
+`SSL::NTF::Service` (`services/NTF/NTF.h`) is a volatile, UI-independent queue.
+Own it in the service container and inject it by reference into producers and consumers.
+`activate(id, severity, text)` copies up to 63 text bytes; an already-active ID is not added
+again. Producers call `deactivate(id)` when a condition clears. Reactivation appends a new item.
+
+Severities are `High`, `Medium`, `Low`, and `Info`. Each activation receives three seconds
+of presentation, in FIFO order. Afterwards the oldest item at the highest active severity
+stays selected, without rotation. Deactivation discards queued or selected items immediately.
+Only info automatically expires, after three seconds on screen. `begin()`/`end()` clear state.
+
+`registerNotificationListener(callback)` returns an ID for
+`unregisterNotificationListener(id)`. Multiple listeners receive `Activated`, `Deactivated`,
+and `SelectionChanged` events and can ignore unwanted types. Event data is copied;
+`hasNotification == false` denotes an empty selection. Register before processing the events
+you need and unregister before destroying the consumer. Historical events are not replayed.
+
+Call `run()` on the application loop to advance presentation and dispatch callbacks.
+`run(false)` dispatches events without starting presentation timers, for example for an
+outbox awaiting remote delivery or a hidden boot screen. Callbacks can register/unregister
+listeners and activate/deactivate notifications; newly generated events wait until the next
+`run()`. Do not retain `getAt()`/`getCurrent()` pointers across queue mutations.
+
 Bee32 components can be enabled or disabled at compile time with build defines.
 
 The defaults are defined in `src/Bee32Config.h` and are set to `1` (enabled) unless noted otherwise.
