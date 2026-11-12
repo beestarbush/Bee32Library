@@ -25,6 +25,8 @@ namespace HAL::WIFI
 
     void Driver::begin()
     {
+        // Modem sleep while associated makes ESP-NOW miss frames between beacons.
+        WiFi.setSleep(false);
         WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info)
         {
             switch (event)
