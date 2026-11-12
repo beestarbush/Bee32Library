@@ -45,6 +45,8 @@ namespace SSL::NET
     // learning the router channel) and while ONLINE or UPDATE is requested. Offline, the radio stays
     // on the learned channel so ESP-NOW peers that joined the same router share it.
     // Boot-time association can be disabled per target with CONFIG_SERVICE_NET_BOOT_CONNECT.
+    // UPDATE additionally runs an access point next to the station, so OTA stays reachable when the
+    // router is not.
     // Credentials come from the configuration keys "ssid" and "password"; the learned channel is
     // stored as "channel" and used when the router is unreachable at boot.
     class Service

@@ -110,6 +110,14 @@ namespace SSL::NET
             advanceConnection(now, state);
         }
 
+        if (_mode == Mode::UPDATE)
+        {
+            _wifi.startAccessPoint();
+        }
+        else
+        {
+            _wifi.stopAccessPoint();
+        }
         _ota.setEnabled(_mode == Mode::UPDATE);
     }
 
@@ -117,6 +125,7 @@ namespace SSL::NET
     {
         _mode = Mode::OFFLINE;
         _ota.setEnabled(false);
+        _wifi.stopAccessPoint();
         _wifi.disconnect();
         _connecting = false;
         _associated = false;

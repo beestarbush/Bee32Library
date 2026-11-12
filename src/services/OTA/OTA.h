@@ -14,7 +14,7 @@ namespace HAL::WIFI
 
 namespace SSL::OTA
 {
-    // ElegantOTA firmware upload page on port 81. Served only while enabled and the station is connected.
+    // ElegantOTA firmware upload page on port 81. Served only while enabled and the station is connected or the access point is active.
     // No authentication: anyone who can reach the device can replace its firmware.
     class Service
     {

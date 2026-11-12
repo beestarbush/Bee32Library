@@ -22,12 +22,14 @@ namespace HAL::WIFI
     class Configuration
     {
         public:
-            Configuration(uint32_t connectionTimeout);
+            // The access point is named "<accessPointPrefix>-<last 4 MAC hex digits>".
+            Configuration(uint32_t connectionTimeout, const char* accessPointPrefix = "Bee32");
 
             friend class Driver;
 
         private:
             uint32_t _connectionTimeout;
+            const char* _accessPointPrefix;
     };
 
     class Driver
@@ -47,6 +49,11 @@ namespace HAL::WIFI
             bool setChannel(uint8_t channel);
             void setupAccessPoint();
             IPAddress getAccessPointIpAddress();
+            // Runs an open access point next to the station, so the station and ESP-NOW keep working.
+            // Both calls are idempotent. The access point follows the station channel.
+            void startAccessPoint();
+            void stopAccessPoint();
+            bool isAccessPointActive() const;
 
             bool getConnected();
             ConnectionState getConnectionState() const;
@@ -61,6 +68,7 @@ namespace HAL::WIFI
             const Configuration _configuration;
             std::atomic<ConnectionState> _connectionState;
             std::atomic<uint8_t> _disconnectReason;
+            std::atomic<bool> _accessPointActive;
     };
 }
 
