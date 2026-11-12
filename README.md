@@ -42,7 +42,9 @@ manifest's broad platform selector is not a claim that every driver runs on ever
 `SSL::NET::Service` owns Wi-Fi connection policy when used by an application:
 
 - `OFFLINE` finishes pending work before disconnecting; it does not mean immediate disconnection.
-- `ONLINE` keeps station Wi-Fi connected. `UPDATE` also enables OTA.
+- `ONLINE` keeps station Wi-Fi connected. `UPDATE` also enables OTA and runs an open access point
+  named `<prefix>-<last 4 MAC hex digits>` next to the station; the prefix is the second
+  `WIFI::Configuration` argument. The access point follows the station channel.
 - Boot association is controlled by `CONFIG_SERVICE_NET_BOOT_CONNECT`. Configuration keys are
   `ssid`, `password` and the fallback/learned `channel`; valid channels are 1-13.
 - `addConnectionRequirement(callback)` registers pending work. A true result keeps the connection
@@ -59,8 +61,8 @@ the budget. The application must schedule both NET and TIM; NET is not a replace
 `run()` call. Read the actual system clock with `time()`; `getEpochTime()` is not implemented as
 a system-clock accessor.
 
-`SSL::OTA::Service` wraps ElegantOTA on port 81 at `/update`. It serves only while enabled and
-station-connected, not through an access-point-only connection. NET controls enablement when
+`SSL::OTA::Service` wraps ElegantOTA on port 81 at `/update`. It serves only while enabled and the
+station is connected or the access point is active. NET controls enablement when
 the two services are used together. OTA has no authentication; any client able to reach it can
 replace firmware. Use a trusted network and a board partition layout that supports OTA.
 

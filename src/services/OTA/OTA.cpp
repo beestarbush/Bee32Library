@@ -34,7 +34,7 @@ namespace SSL::OTA
 
     void Service::run()
     {
-        if (!_enabled || !_wifi.getConnected())
+        if (!_enabled || !(_wifi.getConnected() || _wifi.isAccessPointActive()))
         {
             stopServer();
             return;

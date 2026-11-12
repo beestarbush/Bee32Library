@@ -3,19 +3,23 @@
 #if CONFIG_HAL_DRIVER_WIFI
 
 #include "WiFi.h"
+#include <esp_mac.h>
 #include <esp_wifi.h>
+#include <stdio.h>
 
 namespace HAL::WIFI
 {
-    Configuration::Configuration(uint32_t connectionTimeout) :
-        _connectionTimeout(connectionTimeout)
+    Configuration::Configuration(uint32_t connectionTimeout, const char* accessPointPrefix) :
+        _connectionTimeout(connectionTimeout),
+        _accessPointPrefix(accessPointPrefix)
     {
     }
 
     Driver::Driver(const Configuration& configuration) :
         _configuration(configuration),
         _connectionState(ConnectionState::DISCONNECTED),
-        _disconnectReason(0U)
+        _disconnectReason(0U),
+        _accessPointActive(false)
     {
     }
 
@@ -65,7 +69,7 @@ namespace HAL::WIFI
     {
         _connectionState.store(ConnectionState::DISCONNECTED, std::memory_order_relaxed);
         _disconnectReason.store(0U, std::memory_order_relaxed);
-        WiFi.mode(WIFI_STA);
+        WiFi.mode(_accessPointActive.load(std::memory_order_relaxed) ? WIFI_AP_STA : WIFI_STA);
         WiFi.setAutoReconnect(true);
         WiFi.begin(ssid, password, channel);
     }
@@ -119,6 +123,47 @@ namespace HAL::WIFI
         WiFi.softAP("TimeSinceClock");
         Serial.print("Not connected to wifi, setting up AP with IP:");
         Serial.println(WiFi.softAPIP());
+    }
+
+    void Driver::startAccessPoint()
+    {
+        if (_accessPointActive.load(std::memory_order_relaxed))
+        {
+            return;
+        }
+
+        // The station MAC is fixed per chip, so the name is stable across reboots.
+        uint8_t mac[6] = { 0 };
+        esp_read_mac(mac, ESP_MAC_WIFI_STA);
+        char name[33] = { 0 };
+        snprintf(name, sizeof(name), "%s-%02X%02X", _configuration._accessPointPrefix, mac[4], mac[5]);
+
+        WiFi.mode(WIFI_AP_STA);
+        const uint8_t channel = getChannel();
+        if (WiFi.softAP(name, nullptr, channel >= 1U ? channel : 1U))
+        {
+            _accessPointActive.store(true, std::memory_order_relaxed);
+            Serial.printf("Access point %s started on %s.\n", name, WiFi.softAPIP().toString().c_str());
+        }
+        else
+        {
+            Serial.printf("Access point %s failed to start.\n", name);
+        }
+    }
+
+    void Driver::stopAccessPoint()
+    {
+        if (!_accessPointActive.exchange(false, std::memory_order_relaxed))
+        {
+            return;
+        }
+        WiFi.softAPdisconnect(true);
+        WiFi.mode(WIFI_STA);
+    }
+
+    bool Driver::isAccessPointActive() const
+    {
+        return _accessPointActive.load(std::memory_order_relaxed);
     }
 
     IPAddress Driver::getAccessPointIpAddress()
